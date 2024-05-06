@@ -42,7 +42,11 @@ func (a *Account) AddTransaction(amount float64, sourceAccount, destinationAccou
 		DestinationAccount: destinationAccount,
 	}
 	a.Transactions = append(a.Transactions, transaction)
-	a.Balance += amount
+	if(a.AccountID == sourceAccount){
+		a.Balance -= amount
+	}else if(a.AccountID == destinationAccount){
+		a.Balance += amount
+	}
 	return &transaction
 }
 
@@ -77,7 +81,17 @@ func createTransaction(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(transaction)
 
-	} else {
+	}else if account, ok := accounts.Load(transaction.SourceAccount); ok {
+
+		transaction := account.(*Account).AddTransaction(transaction.Amount, transaction.SourceAccount, transaction.DestinationAccount)
+
+		// If account found, return the account details
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(transaction)
+
+	} 
+	else {
 		// If account not found, return 404 Not Found
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Account with ID %s not found", transaction.DestinationAccount)
