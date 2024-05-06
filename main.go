@@ -50,14 +50,17 @@ func createAccount(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&newMessage)
 
 	account := NewAccount(newMessage.AccountID, newMessage.Balance)
+	accounts.Store(newMessage.AccountID, account)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(account)
 }
 
 func getAccount(w http.ResponseWriter, r *http.Request) {
+	var account Account
+	json.NewDecoder(r.Body).Decode(&account)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode()
+	json.NewEncoder(w).Encode(account)
 }
 
 func createTransaction(w http.ResponseWriter, r *http.Request) {
