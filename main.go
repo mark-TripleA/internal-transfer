@@ -62,8 +62,17 @@ func createAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAccount(w http.ResponseWriter, r *http.Request) {
-	var account Account
-	json.NewDecoder(r.Body).Decode(&account)
+	var newMessage Account
+	json.NewDecoder(r.Body).Decode(&newMessage)
+
+	account, ok := accounts.Load(newMessage.AccountID)
+	if !ok {
+		// If account not found, return 404 Not Found
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "Account with ID %v not found", newMessage.AccountID)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(account)
 }
