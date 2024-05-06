@@ -14,8 +14,8 @@ var accounts sync.Map
 // Transaction represents a single transaction
 type Transaction struct {
 	Amount             float64 `json:"amount"`
-	SourceAccount      string  `json:"source_amount"`
-	DestinationAccount string  `json:"destination_account"`
+	SourceAccount      int64   `json:"source_account_id"`
+	DestinationAccount int64   `json:"destination_account_id"`
 }
 
 // Account represents an account with transactions and a balance
@@ -35,16 +35,16 @@ func NewAccount(accountID int64, balance float64) *Account {
 }
 
 // AddTransaction adds a new transaction to the account
-func (a *Account) AddTransaction(amount float64, sourceAccount, destinationAccount string) *Transaction {
+func (a *Account) AddTransaction(amount float64, sourceAccount, destinationAccount int64) *Transaction {
 	transaction := Transaction{
 		Amount:             amount,
 		SourceAccount:      sourceAccount,
 		DestinationAccount: destinationAccount,
 	}
 	a.Transactions = append(a.Transactions, transaction)
-	if(a.AccountID == sourceAccount){
+	if a.AccountID == sourceAccount {
 		a.Balance -= amount
-	}else if(a.AccountID == destinationAccount){
+	} else if a.AccountID == destinationAccount {
 		a.Balance += amount
 	}
 	return &transaction
@@ -81,7 +81,9 @@ func createTransaction(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(transaction)
 
-	}else if account, ok := accounts.Load(transaction.SourceAccount); ok {
+	}
+
+	if account, ok := accounts.Load(transaction.SourceAccount); ok {
 
 		transaction := account.(*Account).AddTransaction(transaction.Amount, transaction.SourceAccount, transaction.DestinationAccount)
 
@@ -90,8 +92,7 @@ func createTransaction(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(transaction)
 
-	} 
-	else {
+	} else {
 		// If account not found, return 404 Not Found
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Account with ID %s not found", transaction.DestinationAccount)
