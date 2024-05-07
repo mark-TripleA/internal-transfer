@@ -14,5 +14,5 @@ Build the project: `go build`
 
 Run the project: `go run main.go`
 
-Sample request to create a transaction
-`  curl -X POST -H "Content-Type: application/json" -d '{"text":"Hello, World!"}' http://localhost:8080/transactio` `
+Sample request to create an account
+```curl -X POST -H "Content-Type: application/json" -d '{"account_id": 123,"balance": 100.23344}' http://localhost:8080/accounts```
